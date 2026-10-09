@@ -2,10 +2,10 @@ import { apiClient, apiCall } from './config.js';
 import { mockEngine } from './mockEngine.js';
 
 export const authApi = {
-  login: async (email, password_hash) => {
+  login: async (identifier, password_hash) => {
     return apiCall(
-      () => apiClient.post('/auth/login', { email, password: password_hash }),
-      () => mockEngine.login(email, password_hash)
+      () => apiClient.post('/auth/login', { identifier, email: identifier, phone: identifier, password: password_hash }),
+      () => mockEngine.login(identifier, password_hash)
     );
   },
 

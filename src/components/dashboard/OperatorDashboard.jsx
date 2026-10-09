@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { camerasApi } from '../../api/camerasApi.js';
 import { zonesApi } from '../../api/zonesApi.js';
 import { StatusBadge } from '../common/StatusBadge.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { Video, Layers, AlertTriangle, ArrowRight, Eye } from 'lucide-react';
 
 export const OperatorDashboard = () => {
@@ -41,8 +42,11 @@ export const OperatorDashboard = () => {
       {/* Operator Banner */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold mb-3">
-            <Eye className="w-4 h-4 text-indigo-600" /> Operator Monitoring Desk (Read-Only)
+          <div className="flex items-center gap-2 mb-3">
+            <BackButton />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
+              <Eye className="w-4 h-4 text-indigo-600" /> Operator Monitoring Desk (Read-Only)
+            </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             {plantName} Surveillance Overview

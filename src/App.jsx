@@ -13,10 +13,13 @@ import { OperatorDashboard } from './components/dashboard/OperatorDashboard.jsx'
 
 import { UserList } from './components/users/UserList.jsx';
 import { PlantList } from './components/plants/PlantList.jsx';
+import { PlantDetails } from './components/plants/PlantDetails.jsx';
 import { ZoneList } from './components/zones/ZoneList.jsx';
+import { ZoneDetails } from './components/zones/ZoneDetails.jsx';
 import { CameraList } from './components/cameras/CameraList.jsx';
 import { AuditLogs } from './components/dashboard/AuditLogs.jsx';
-import { HomePage } from './components/home/HomePage.jsx';
+import { ProfilePage } from './components/profile/ProfilePage.jsx';
+import { QREntryPage } from './components/attendance/QREntryPage.jsx';
 import { normalizeRole, getRolePath } from './utils/roleUtils.js';
 
 const AppContent = () => {
@@ -48,10 +51,8 @@ const AppContent = () => {
 
   return (
     <Routes>
-      {/* Home Landing Page */}
-      <Route path="/" element={<HomePage />} />
-
-      {/* Role-Specific & General Login Routes */}
+      {/* Root Landing Page & Login Routes */}
+      <Route path="/" element={<LoginForm />} />
       <Route path="/login" element={<LoginForm />} />
       <Route path="/login/:role" element={<LoginForm />} />
 
@@ -81,10 +82,26 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/super-admin/plants/:id"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <PlantDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/super-admin/zones"
         element={
           <ProtectedRoute allowedRoles={['super_admin']}>
             <ZoneList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/zones/:id"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <ZoneDetails />
           </ProtectedRoute>
         }
       />
@@ -101,6 +118,22 @@ const AppContent = () => {
         element={
           <ProtectedRoute allowedRoles={['super_admin']}>
             <AuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/qr-entry"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <QREntryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/profile"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
@@ -123,10 +156,34 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/admin/plants"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <PlantList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/plants/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <PlantDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/zones"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <ZoneList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/zones/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ZoneDetails />
           </ProtectedRoute>
         }
       />
@@ -146,6 +203,22 @@ const AppContent = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/qr-entry"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <QREntryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/profile"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Plant Manager Routes */}
       <Route
@@ -157,10 +230,34 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/plant-manager/plants"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <PlantList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/plants/:id"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <PlantDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/plant-manager/zones"
         element={
           <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
             <ZoneList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/zones/:id"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <ZoneDetails />
           </ProtectedRoute>
         }
       />
@@ -180,6 +277,22 @@ const AppContent = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/plant-manager/qr-entry"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <QREntryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/profile"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Operator Routes */}
       <Route
@@ -187,6 +300,22 @@ const AppContent = () => {
         element={
           <ProtectedRoute allowedRoles={['operator']}>
             <OperatorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/plants"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <PlantList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/plants/:id"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <PlantDetails />
           </ProtectedRoute>
         }
       />
@@ -207,10 +336,34 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/operator/zones/:id"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <ZoneDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/operator/activity"
         element={
           <ProtectedRoute allowedRoles={['operator']}>
             <AuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/qr-entry"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <QREntryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/profile"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

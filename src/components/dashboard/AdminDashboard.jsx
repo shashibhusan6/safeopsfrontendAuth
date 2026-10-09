@@ -5,6 +5,8 @@ import { usersApi } from '../../api/usersApi.js';
 import { zonesApi } from '../../api/zonesApi.js';
 import { camerasApi } from '../../api/camerasApi.js';
 import { StatusBadge } from '../common/StatusBadge.jsx';
+import { AttendanceLogTable } from '../common/AttendanceLogTable.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { Users, Layers, Video, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -47,10 +49,19 @@ export const AdminDashboard = () => {
       {/* Admin Hero Banner */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold mb-3">
-            <ShieldCheck className="w-4 h-4 text-indigo-600" /> Plant Admin Command Workspace
+          <div className="flex items-center gap-2 mb-3">
+            <BackButton />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
+              <ShieldCheck className="w-4 h-4 text-indigo-600" /> Plant Admin Command Workspace
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1
+            onClick={() => user?.plant_id && navigate(`/admin/plants/${user.plant_id}`)}
+            className={`text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2 ${
+              user?.plant_id ? 'cursor-pointer hover:text-indigo-600 transition' : ''
+            }`}
+            title={user?.plant_id ? 'Click to view Plant Facility Details' : ''}
+          >
             {plantName} Management
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
@@ -109,6 +120,9 @@ export const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Attendance QR Code Entry Log Table */}
+      <AttendanceLogTable plantId={user?.plant_id} title={`Live Employee QR Entry Logs - ${plantName}`} />
 
       {/* Team Members List */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">

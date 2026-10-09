@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { zonesApi } from '../../api/zonesApi.js';
 import { plantsApi } from '../../api/plantsApi.js';
 import { StatusBadge } from '../common/StatusBadge.jsx';
 import { Pagination } from '../common/Pagination.jsx';
 import { ZoneModal } from './ZoneModal.jsx';
 import { ConfirmDialog } from '../common/ConfirmDialog.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { Layers, Plus, Power, Edit3, Trash2, Video, Search, Clock, Factory, AlertTriangle } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect.jsx';
+import { normalizeRole, getRolePath } from '../../utils/roleUtils.js';
+import { Layers, Plus, Power, Edit3, Trash2, Video, Search, Clock, Factory, AlertTriangle, Eye, ArrowRight } from 'lucide-react';
 
 export const ZoneList = () => {
   const { user } = useAuth();
   const { addToast, showForbiddenAlert } = useToast();
+  const navigate = useNavigate();
 
-  const isOperator = user?.role === 'operator';
+  const activeRole = normalizeRole(user?.role);
+  const basePath = getRolePath(activeRole);
+  const isOperator = activeRole === 'operator';
 
   const [zones, setZones] = useState([]);
   const [plants, setPlants] = useState([]);
@@ -136,13 +143,16 @@ export const ZoneList = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            Zone Operations & Perimeters
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Hazard severity levels, operating schedules, and nested camera streams.
-          </p>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              Zone Operations & Perimeters
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Hazard severity levels, operating schedules, and nested camera streams.
+            </p>
+          </div>
         </div>
 
         <button
@@ -166,18 +176,19 @@ export const ZoneList = () => {
       <div className="p-4 bg-white border border-slate-200/80 rounded-xl flex flex-col md:flex-row items-center gap-3 shadow-xs">
         {/* Plant Selector Filter */}
         <div className="w-full md:w-64">
-          <select
+          <CustomSelect
             value={selectedPlantId ?? ''}
             onChange={(e) => setSelectedPlantId(e.target.value ? Number(e.target.value) : undefined)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
-          >
-            <option value="">All Plants</option>
-            {plants.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.status})
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: 'All Plants' },
+              ...plants.map((p) => ({
+                value: p.id,
+                label: `${p.name} (${p.status})`,
+              })),
+            ]}
+            className="w-full"
+            size="sm"
+          />
         </div>
 
         {/* Search */}
@@ -188,27 +199,29 @@ export const ZoneList = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search zone name or hazard level..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition"
           />
         </div>
 
         {/* Status Filter */}
         <div className="w-full md:w-40">
-          <select
+          <CustomSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
-          >
-            <option value="">All Statuses</option>
-            <option value="active">Active Zones</option>
-            <option value="inactive">Inactive Zones</option>
-          </select>
+            options={[
+              { value: '', label: 'All Statuses' },
+              { value: 'active', label: 'Active Zones' },
+              { value: 'inactive', label: 'Inactive Zones' },
+            ]}
+            className="w-full"
+            size="sm"
+          />
         </div>
       </div>
 
       {/* Zones Table */}
       <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto touch-scroll">
           <table className="w-full text-left text-sm text-slate-700">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <tr>
@@ -242,12 +255,18 @@ export const ZoneList = () => {
                   return (
                     <tr key={z.id} className="hover:bg-slate-50/80 transition">
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600">
+                        <div
+                          onClick={() => navigate(`${basePath}/zones/${z.id}`)}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition">
                             <Layers className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900">{z.name}</div>
+                            <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                              {z.name}
+                              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition text-indigo-600" />
+                            </div>
                             <div className="text-xs text-slate-500">ID #{z.id}</div>
                           </div>
                         </div>
@@ -288,6 +307,14 @@ export const ZoneList = () => {
                       </td>
 
                       <td className="px-5 py-4 text-right space-x-1">
+                        <button
+                          onClick={() => navigate(`${basePath}/zones/${z.id}`)}
+                          title="View Dedicated Zone Details"
+                          className="p-1.5 rounded-md text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
                         <button
                           onClick={() => {
                             if (isOperator) {

@@ -1,4 +1,12 @@
-import { INITIAL_USERS, INITIAL_PLANTS, INITIAL_ZONES, INITIAL_CAMERAS } from './mockData.js';
+import {
+  INITIAL_USERS,
+  INITIAL_PLANTS,
+  INITIAL_ZONES,
+  INITIAL_CAMERAS,
+  INITIAL_SUPER_ADMIN_ALERTS,
+  INITIAL_SUPER_ADMIN_METRICS,
+  INITIAL_ATTENDANCE,
+} from './mockData.js';
 
 class MockEngine {
   constructor() {
@@ -6,6 +14,9 @@ class MockEngine {
     this.plants = [...INITIAL_PLANTS];
     this.zones = [...INITIAL_ZONES];
     this.cameras = [...INITIAL_CAMERAS];
+    this.alerts = [...INITIAL_SUPER_ADMIN_ALERTS];
+    this.attendance = [...INITIAL_ATTENDANCE];
+    this.metrics = { ...INITIAL_SUPER_ADMIN_METRICS };
 
     this.activeRole = 'super_admin';
     this.currentUser = INITIAL_USERS[0];
@@ -19,6 +30,14 @@ class MockEngine {
       localStorage.setItem('safeops_mock_plants', JSON.stringify(this.plants));
       localStorage.setItem('safeops_mock_zones', JSON.stringify(this.zones));
       localStorage.setItem('safeops_mock_cameras', JSON.stringify(this.cameras));
+      localStorage.setItem('safeops_mock_alerts', JSON.stringify(this.alerts));
+      localStorage.setItem('safeops_mock_attendance', JSON.stringify(this.attendance));
+      localStorage.setItem('safeops_mock_active_role', this.activeRole);
+      if (this.currentUser) {
+        localStorage.setItem('safeops_mock_current_user_id', String(this.currentUser.id));
+      } else {
+        localStorage.removeItem('safeops_mock_current_user_id');
+      }
     } catch {
       // ignore
     }
@@ -30,10 +49,32 @@ class MockEngine {
       const p = localStorage.getItem('safeops_mock_plants');
       const z = localStorage.getItem('safeops_mock_zones');
       const c = localStorage.getItem('safeops_mock_cameras');
-      if (u) this.users = JSON.parse(u);
+      const alt = localStorage.getItem('safeops_mock_alerts');
+      const att = localStorage.getItem('safeops_mock_attendance');
+      const r = localStorage.getItem('safeops_mock_active_role');
+      const uid = localStorage.getItem('safeops_mock_current_user_id');
+      if (u) {
+        const parsedUsers = JSON.parse(u);
+        this.users = parsedUsers.map((su) => {
+          const init = INITIAL_USERS.find((iu) => iu.email.toLowerCase() === su.email.toLowerCase());
+          if (init && init.plant_id !== undefined && (su.plant_id === undefined || su.plant_id === null)) {
+            return { ...su, plant_id: init.plant_id };
+          }
+          return su;
+        });
+      }
       if (p) this.plants = JSON.parse(p);
       if (z) this.zones = JSON.parse(z);
       if (c) this.cameras = JSON.parse(c);
+      if (alt) this.alerts = JSON.parse(alt);
+      if (att) this.attendance = JSON.parse(att);
+      if (r) this.activeRole = r;
+      if (uid) {
+        const found = this.users.find((user) => String(user.id) === String(uid));
+        if (found) {
+          this.currentUser = found;
+        }
+      }
     } catch {
       // fallback
     }
@@ -41,24 +82,27 @@ class MockEngine {
 
   setSimulatedRole(role) {
     this.activeRole = role;
-    const found = this.users.find((u) => u.role === role);
+    const found = this.users.find((u) => u.role === role && u.plant_id !== null);
     if (found) {
       this.currentUser = { ...found };
     } else {
-      this.currentUser = {
+      const sysDefault = INITIAL_USERS.find((u) => u.role === role && u.plant_id !== null);
+      this.currentUser = sysDefault ? { ...sysDefault } : {
         id: 999,
         name: `Demo ${role.toUpperCase()}`,
         email: `${role}@safeops.io`,
         role: role,
-        plant_id: role === 'super_admin' ? null : 1,
+        plant_id: 1,
         invite_status: 'accepted',
         account_status: 'active',
       };
     }
+    this.saveToStorage();
   }
 
   getCurrentUser() {
-    return { ...this.currentUser, role: this.activeRole };
+    const plant = this.plants.find((p) => Number(p.id) === Number(this.currentUser?.plant_id)) || null;
+    return { ...this.currentUser, role: this.activeRole, plant };
   }
 
   checkOperatorRestriction() {
@@ -86,20 +130,36 @@ class MockEngine {
 
     this.activeRole = user.role;
     this.currentUser = user;
+    this.saveToStorage();
+
+    const plant = this.plants.find((p) => Number(p.id) === Number(user.plant_id)) || null;
 
     return {
       token: `mock_jwt_token_${user.id}_${Date.now()}`,
-      user: { ...user },
+      user: { ...user, plant },
     };
   }
 
+  logout() {
+    this.activeRole = 'super_admin';
+    this.currentUser = INITIAL_USERS[0];
+    try {
+      localStorage.removeItem('safeops_mock_active_role');
+      localStorage.removeItem('safeops_mock_current_user_id');
+    } catch {
+      // ignore
+    }
+    this.saveToStorage();
+  }
+
   me() {
-    if (this.currentUser.account_status === 'disabled') {
+    if (this.currentUser?.account_status === 'disabled') {
       const err = new Error('Account is disabled');
       err.response = { status: 401, data: { error: 'Account is disabled' } };
       throw err;
     }
-    return { user: { ...this.currentUser } };
+    const plant = this.plants.find((p) => Number(p.id) === Number(this.currentUser?.plant_id)) || null;
+    return { user: { ...this.currentUser, role: this.activeRole, plant } };
   }
 
   acceptInvite(_token, _password_hash) {
@@ -245,8 +305,10 @@ class MockEngine {
   getPlants(page = 1, limit = 10, search = '', status = '') {
     let filtered = [...this.plants];
 
-    if (this.activeRole !== 'super_admin' && this.currentUser.plant_id) {
+    if (this.currentUser?.plant_id) {
       filtered = filtered.filter((p) => p.id === this.currentUser.plant_id);
+    } else {
+      filtered = [];
     }
 
     if (search) {
@@ -288,7 +350,14 @@ class MockEngine {
   }
 
   getPlantById(id) {
-    const plant = this.plants.find((p) => p.id === id);
+    const targetId = Number(id);
+    if (this.currentUser?.plant_id && targetId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant facilities.');
+      err.response = { status: 403, data: { error: 'Access denied: You do not have permission to view or manage another plant facility.' } };
+      throw err;
+    }
+
+    const plant = this.plants.find((p) => p.id === targetId);
     if (!plant) {
       const err = new Error('Plant not found');
       err.response = { status: 404, data: { error: 'Plant not found' } };
@@ -306,96 +375,22 @@ class MockEngine {
     };
   }
 
-  createPlant(data) {
-    this.checkOperatorRestriction();
-    if (this.activeRole !== 'super_admin') {
-      const err = new Error('Forbidden: Only super_admin can create plants.');
-      err.response = { status: 403, data: { error: 'Only super_admin can create new plants.' } };
-      throw err;
-    }
-
-    const newPlantId = Date.now();
-    const newPlant = {
-      id: newPlantId,
-      name: data.name,
-      address: data.address,
-      timezone: data.timezone,
-      status: data.status || 'active',
-      createdAt: new Date().toISOString(),
-    };
-
-    this.plants.unshift(newPlant);
-
-    // Process nested Zones & Cameras
-    if (Array.isArray(data.zones) && data.zones.length > 0) {
-      data.zones.forEach((z, zIdx) => {
-        const zoneName = z.name && z.name.trim() ? z.name.trim() : `Zone ${zIdx + 1}`;
-        const zoneId = Date.now() + zIdx + 1;
-        const newZone = {
-          id: zoneId,
-          plant_id: newPlantId,
-          name: zoneName,
-          severity_level: z.severity_level || 'medium',
-          operating_schedule: z.operating_schedule || { start: '08:00', end: '20:00', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
-          status: 'active',
-          createdAt: new Date().toISOString(),
-        };
-        this.zones.unshift(newZone);
-
-        if (Array.isArray(z.cameras) && z.cameras.length > 0) {
-          z.cameras.forEach((c, cIdx) => {
-            const camName = c.name && c.name.trim() ? c.name.trim() : `Camera ${cIdx + 1}`;
-            const newCamera = {
-              id: Date.now() + (zIdx + 1) * 100 + cIdx + 1,
-              zone_id: zoneId,
-              name: camName,
-              feed_type: c.feed_type || 'simulated',
-              feed_url_or_path: c.feed_url_or_path || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
-              status: 'online',
-              is_active: true,
-              last_heartbeat_at: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-            };
-            this.cameras.unshift(newCamera);
-          });
-        }
-      });
-    }
-
-    // Process Plant Manager Assignment / Invitation
-    if (data.managerOption === 'existing' && data.manager_id) {
-      const existingMgr = this.users.find((u) => u.id === Number(data.manager_id));
-      if (existingMgr) {
-        existingMgr.plant_id = newPlantId;
-      }
-    } else if (data.managerOption === 'invite' && data.new_manager?.email && data.new_manager?.name) {
-      const newMgr = {
-        id: Date.now() + 888,
-        name: data.new_manager.name.trim(),
-        email: data.new_manager.email.trim(),
-        role: 'manager',
-        plant_id: newPlantId,
-        invited_by: this.currentUser.id,
-        invite_status: 'pending',
-        account_status: 'active',
-        createdAt: new Date().toISOString(),
-      };
-      this.users.unshift(newMgr);
-    }
-
-    this.saveToStorage();
-    return this.getPlantById(newPlantId);
+  createPlant(_data) {
+    const err = new Error('Forbidden: Plant creation is disabled.');
+    err.response = { status: 403, data: { error: 'Plant creation has been removed. Super Admins are assigned to individual plant facilities.' } };
+    throw err;
   }
 
   enablePlant(id) {
     this.checkOperatorRestriction();
-    if (this.activeRole !== 'super_admin') {
-      const err = new Error('Forbidden: Only super_admin can modify plants.');
-      err.response = { status: 403, data: { error: 'Only super_admin can enable or disable plants.' } };
+    const targetId = Number(id);
+    if (this.currentUser?.plant_id && targetId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant facilities.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify another plant facility.' } };
       throw err;
     }
 
-    const plant = this.plants.find((p) => p.id === id);
+    const plant = this.plants.find((p) => p.id === targetId);
     if (!plant) throw new Error('Plant not found');
     plant.status = 'active';
     this.saveToStorage();
@@ -404,17 +399,18 @@ class MockEngine {
 
   disablePlant(id) {
     this.checkOperatorRestriction();
-    if (this.activeRole !== 'super_admin') {
-      const err = new Error('Forbidden: Only super_admin can modify plants.');
-      err.response = { status: 403, data: { error: 'Only super_admin can enable or disable plants.' } };
+    const targetId = Number(id);
+    if (this.currentUser?.plant_id && targetId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant facilities.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify another plant facility.' } };
       throw err;
     }
 
-    const plant = this.plants.find((p) => p.id === id);
+    const plant = this.plants.find((p) => p.id === targetId);
     if (!plant) throw new Error('Plant not found');
     plant.status = 'inactive';
 
-    this.zones.filter((z) => z.plant_id === id).forEach((z) => {
+    this.zones.filter((z) => z.plant_id === targetId).forEach((z) => {
       z.status = 'inactive';
       this.cameras.filter((c) => c.zone_id === z.id).forEach((c) => {
         c.is_active = false;
@@ -432,20 +428,26 @@ class MockEngine {
 
   updatePlant(id, data) {
     this.checkOperatorRestriction();
-    const index = this.plants.findIndex((p) => p.id === id);
+    const targetId = Number(id);
+    if (this.currentUser?.plant_id && targetId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant facilities.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot update another plant facility.' } };
+      throw err;
+    }
+
+    const index = this.plants.findIndex((p) => p.id === targetId);
     if (index === -1) throw new Error('Plant not found');
 
     const { managerOption, manager_id, new_manager, zones, ...plantFields } = data;
     this.plants[index] = { ...this.plants[index], ...plantFields, updatedAt: new Date().toISOString() };
 
     if (managerOption === 'existing' && manager_id) {
-      // Unassign existing managers for this plant
-      this.users.filter((u) => u.plant_id === id && (u.role === 'manager' || u.role === 'admin')).forEach((u) => {
+      this.users.filter((u) => u.plant_id === targetId && (u.role === 'manager' || u.role === 'admin')).forEach((u) => {
         u.plant_id = null;
       });
       const newAssigned = this.users.find((u) => u.id === Number(manager_id));
       if (newAssigned) {
-        newAssigned.plant_id = id;
+        newAssigned.plant_id = targetId;
       }
     } else if (managerOption === 'invite' && new_manager?.email && new_manager?.name) {
       const newMgr = {
@@ -453,7 +455,7 @@ class MockEngine {
         name: new_manager.name.trim(),
         email: new_manager.email.trim(),
         role: 'manager',
-        plant_id: id,
+        plant_id: targetId,
         invited_by: this.currentUser.id,
         invite_status: 'pending',
         account_status: 'active',
@@ -463,7 +465,7 @@ class MockEngine {
     }
 
     this.saveToStorage();
-    return this.getPlantById(id);
+    return this.getPlantById(targetId);
   }
 
   deletePlant(id) {
@@ -472,12 +474,19 @@ class MockEngine {
 
   // --- ZONES ---
   getZones(plantId, page = 1, limit = 10, search = '', status = '') {
+    if (plantId && this.currentUser?.plant_id && Number(plantId) !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant zones.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view zones for another plant facility.' } };
+      throw err;
+    }
+
     let filtered = [...this.zones];
 
-    if (plantId) {
-      filtered = filtered.filter((z) => z.plant_id === plantId);
-    } else if (this.activeRole !== 'super_admin' && this.currentUser.plant_id) {
-      filtered = filtered.filter((z) => z.plant_id === this.currentUser.plant_id);
+    const targetPlantId = plantId ? Number(plantId) : this.currentUser?.plant_id;
+    if (targetPlantId) {
+      filtered = filtered.filter((z) => z.plant_id === Number(targetPlantId));
+    } else {
+      filtered = [];
     }
 
     if (search) {
@@ -507,12 +516,19 @@ class MockEngine {
   }
 
   getZoneById(id) {
-    const zone = this.zones.find((z) => z.id === id);
+    const zone = this.zones.find((z) => z.id === Number(id));
     if (!zone) {
       const err = new Error('Zone not found');
       err.response = { status: 404, data: { error: 'Zone not found' } };
       throw err;
     }
+
+    if (this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant zone.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view zone details for another plant facility.' } };
+      throw err;
+    }
+
     return {
       ...zone,
       plant: this.plants.find((p) => p.id === zone.plant_id),
@@ -523,7 +539,14 @@ class MockEngine {
   createZone(plantId, data) {
     this.checkOperatorRestriction();
 
-    const parentPlant = this.plants.find((p) => p.id === plantId);
+    const targetPlantId = Number(plantId);
+    if (this.currentUser?.plant_id && targetPlantId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to create zone in another plant.');
+      err.response = { status: 403, data: { error: 'Access denied: You can only create zones within your assigned plant facility.' } };
+      throw err;
+    }
+
+    const parentPlant = this.plants.find((p) => p.id === targetPlantId);
     if (!parentPlant) {
       const err = new Error('Parent plant not found');
       err.response = { status: 404, data: { error: 'Parent plant not found' } };
@@ -538,7 +561,7 @@ class MockEngine {
 
     const newZone = {
       id: Date.now(),
-      plant_id: plantId,
+      plant_id: targetPlantId,
       name: data.name,
       severity_level: data.severity_level,
       operating_schedule: data.operating_schedule || { start: '08:00', end: '20:00', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
@@ -553,8 +576,14 @@ class MockEngine {
 
   enableZone(id) {
     this.checkOperatorRestriction();
-    const zone = this.zones.find((z) => z.id === id);
+    const zone = this.zones.find((z) => z.id === Number(id));
     if (!zone) throw new Error('Zone not found');
+
+    if (this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify zones in another plant.' } };
+      throw err;
+    }
 
     const parentPlant = this.plants.find((p) => p.id === zone.plant_id);
     if (parentPlant && parentPlant.status === 'inactive') {
@@ -570,11 +599,17 @@ class MockEngine {
 
   disableZone(id) {
     this.checkOperatorRestriction();
-    const zone = this.zones.find((z) => z.id === id);
+    const zone = this.zones.find((z) => z.id === Number(id));
     if (!zone) throw new Error('Zone not found');
 
+    if (this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify zones in another plant.' } };
+      throw err;
+    }
+
     zone.status = 'inactive';
-    this.cameras.filter((c) => c.zone_id === id).forEach((c) => {
+    this.cameras.filter((c) => c.zone_id === zone.id).forEach((c) => {
       c.is_active = false;
       c.status = 'offline';
     });
@@ -589,8 +624,15 @@ class MockEngine {
 
   updateZone(id, data) {
     this.checkOperatorRestriction();
-    const index = this.zones.findIndex((z) => z.id === id);
+    const index = this.zones.findIndex((z) => z.id === Number(id));
     if (index === -1) throw new Error('Zone not found');
+
+    const zone = this.zones[index];
+    if (this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot update zones in another plant.' } };
+      throw err;
+    }
 
     this.zones[index] = { ...this.zones[index], ...data, updatedAt: new Date().toISOString() };
     this.saveToStorage();
@@ -603,20 +645,30 @@ class MockEngine {
 
   // --- CAMERAS ---
   getCameras(zoneId, page = 1, limit = 10, search = '', status = '', plantId = undefined) {
+    if (plantId && this.currentUser?.plant_id && Number(plantId) !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant cameras.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view cameras for another plant facility.' } };
+      throw err;
+    }
+
     let filtered = [...this.cameras];
+    const targetPlantId = plantId ? Number(plantId) : this.currentUser?.plant_id;
 
     if (zoneId) {
+      const zone = this.zones.find((z) => z.id === Number(zoneId));
+      if (zone && this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+        const err = new Error('Forbidden: Access denied.');
+        err.response = { status: 403, data: { error: 'Access denied: You cannot view cameras for another plant zone.' } };
+        throw err;
+      }
       filtered = filtered.filter((c) => c.zone_id === Number(zoneId));
-    } else if (plantId) {
+    } else if (targetPlantId) {
       const plantZoneIds = this.zones
-        .filter((z) => z.plant_id === Number(plantId))
+        .filter((z) => z.plant_id === Number(targetPlantId))
         .map((z) => z.id);
       filtered = filtered.filter((c) => plantZoneIds.includes(c.zone_id));
-    } else if (this.activeRole !== 'super_admin' && this.currentUser.plant_id) {
-      const plantZoneIds = this.zones
-        .filter((z) => z.plant_id === this.currentUser.plant_id)
-        .map((z) => z.id);
-      filtered = filtered.filter((c) => plantZoneIds.includes(c.zone_id));
+    } else {
+      filtered = [];
     }
 
     if (search) {
@@ -661,24 +713,38 @@ class MockEngine {
   }
 
   getCameraById(id) {
-    const camera = this.cameras.find((c) => c.id === id);
+    const camera = this.cameras.find((c) => c.id === Number(id));
     if (!camera) {
       const err = new Error('Camera not found');
       err.response = { status: 404, data: { error: 'Camera not found' } };
       throw err;
     }
+
+    const zone = this.zones.find((z) => z.id === camera.zone_id);
+    if (this.currentUser?.plant_id && zone && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view camera details for another plant facility.' } };
+      throw err;
+    }
+
     return {
       ...camera,
-      zone: this.zones.find((z) => z.id === camera.zone_id),
+      zone,
     };
   }
 
   createCamera(zoneId, data) {
     this.checkOperatorRestriction();
-    const zone = this.zones.find((z) => z.id === zoneId);
+    const zone = this.zones.find((z) => z.id === Number(zoneId));
     if (!zone) {
       const err = new Error('Zone not found');
       err.response = { status: 404, data: { error: 'Zone not found' } };
+      throw err;
+    }
+
+    if (this.currentUser?.plant_id && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot add cameras to another plant facility.' } };
       throw err;
     }
 
@@ -692,7 +758,7 @@ class MockEngine {
 
     const newCamera = {
       id: Date.now(),
-      zone_id: zoneId,
+      zone_id: Number(zoneId),
       name: data.name,
       feed_type: data.feed_type,
       feed_url_or_path: data.feed_url_or_path || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
@@ -709,10 +775,16 @@ class MockEngine {
 
   enableCamera(id) {
     this.checkOperatorRestriction();
-    const camera = this.cameras.find((c) => c.id === id);
+    const camera = this.cameras.find((c) => c.id === Number(id));
     if (!camera) throw new Error('Camera not found');
 
     const zone = this.zones.find((z) => z.id === camera.zone_id);
+    if (this.currentUser?.plant_id && zone && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify cameras in another plant.' } };
+      throw err;
+    }
+
     const plant = zone ? this.plants.find((p) => p.id === zone.plant_id) : null;
 
     if (zone?.status === 'inactive' || plant?.status === 'inactive') {
@@ -730,8 +802,15 @@ class MockEngine {
 
   disableCamera(id) {
     this.checkOperatorRestriction();
-    const camera = this.cameras.find((c) => c.id === id);
+    const camera = this.cameras.find((c) => c.id === Number(id));
     if (!camera) throw new Error('Camera not found');
+
+    const zone = this.zones.find((z) => z.id === camera.zone_id);
+    if (this.currentUser?.plant_id && zone && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot modify cameras in another plant.' } };
+      throw err;
+    }
 
     camera.is_active = false;
     camera.status = 'offline';
@@ -745,8 +824,16 @@ class MockEngine {
 
   updateCamera(id, data) {
     this.checkOperatorRestriction();
-    const index = this.cameras.findIndex((c) => c.id === id);
+    const index = this.cameras.findIndex((c) => c.id === Number(id));
     if (index === -1) throw new Error('Camera not found');
+
+    const camera = this.cameras[index];
+    const zone = this.zones.find((z) => z.id === camera.zone_id);
+    if (this.currentUser?.plant_id && zone && zone.plant_id !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot update cameras in another plant.' } };
+      throw err;
+    }
 
     this.cameras[index] = { ...this.cameras[index], ...data, updatedAt: new Date().toISOString() };
     this.saveToStorage();
@@ -755,6 +842,152 @@ class MockEngine {
 
   deleteCamera(id) {
     return this.disableCamera(id);
+  }
+
+  // --- TELEMETRY & ALERTS ---
+  getSafetyAlerts(plantId) {
+    const targetPlantId = plantId ? Number(plantId) : this.currentUser?.plant_id;
+    if (targetPlantId && this.currentUser?.plant_id && targetPlantId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied to other plant telemetry.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view safety alerts for another plant facility.' } };
+      throw err;
+    }
+
+    if (!targetPlantId) return [];
+    return this.alerts.filter((a) => a.plant_id === Number(targetPlantId));
+  }
+
+  getSuperAdminMetrics(plantId) {
+    const targetPlantId = plantId ? Number(plantId) : this.currentUser?.plant_id;
+    if (targetPlantId && this.currentUser?.plant_id && targetPlantId !== Number(this.currentUser.plant_id)) {
+      const err = new Error('Forbidden: Access denied.');
+      err.response = { status: 403, data: { error: 'Access denied: You cannot view metrics for another plant facility.' } };
+      throw err;
+    }
+
+    const plantCams = this.getCameras(undefined, 1, 100, '', '', targetPlantId).data;
+    const online = plantCams.filter((c) => c.status === 'online' && c.is_active).length;
+    return {
+      ...this.metrics,
+      aiFeedsOnline: online,
+      aiFeedsTotal: plantCams.length || this.metrics.aiFeedsTotal,
+    };
+  }
+
+  acknowledgeAlert(alertId) {
+    const alert = this.alerts.find((a) => a.id === alertId);
+    if (alert) {
+      if (this.currentUser?.plant_id && alert.plant_id !== Number(this.currentUser.plant_id)) {
+        const err = new Error('Forbidden: Access denied.');
+        err.response = { status: 403, data: { error: 'Access denied: You cannot acknowledge alerts for another plant.' } };
+        throw err;
+      }
+      alert.status = 'resolved';
+      this.saveToStorage();
+    }
+    return { success: true };
+  }
+
+  // --- ATTENDANCE & QR ENTRY ---
+  scanQRCode(qrToken, plantId = null) {
+    const user = this.users.find((u) => u.qr_token === qrToken || `QR-EMP-${u.id}` === qrToken);
+    if (!user) {
+      const err = new Error('Invalid or unrecognized employee QR Code token');
+      err.response = { status: 404, data: { error: 'Invalid or unrecognized employee QR Code token.' } };
+      throw err;
+    }
+
+    if (user.account_status === 'disabled') {
+      const err = new Error('Employee account is disabled');
+      err.response = { status: 400, data: { error: `Employee '${user.name}' account is disabled. Entry denied.` } };
+      throw err;
+    }
+
+    const targetPlantId = plantId || user.plant_id || this.currentUser?.plant_id || 1;
+    const plant = this.plants.find((p) => p.id === Number(targetPlantId));
+    const plantName = plant ? plant.name : `Plant #${targetPlantId}`;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const existing = this.attendance.find(
+      (a) => a.employee_id === user.id && a.entry_date === todayStr && a.plant_id === Number(targetPlantId)
+    );
+
+    if (existing) {
+      const err = new Error(`Employee '${user.name}' has already checked in today at ${existing.formatted_time}.`);
+      err.response = {
+        status: 400,
+        data: {
+          error: `Employee '${user.name}' has already checked in today at ${existing.formatted_time}.`,
+          alreadyCheckedIn: true,
+          existingRecord: existing,
+        },
+      };
+      throw err;
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newRecord = {
+      id: Date.now(),
+      employee_id: user.id,
+      employee_name: user.name,
+      employee_email: user.email,
+      employee_role: user.role,
+      qr_token: user.qr_token || qrToken,
+      plant_id: Number(targetPlantId),
+      plant_name: plantName,
+      entry_date: todayStr,
+      entry_timestamp: now.toISOString(),
+      formatted_time: formattedTime,
+      status: 'Checked-In',
+      createdAt: now.toISOString(),
+    };
+
+    this.attendance.unshift(newRecord);
+    this.saveToStorage();
+
+    return {
+      message: 'QR Code Check-In Verified',
+      record: newRecord,
+    };
+  }
+
+  getAttendanceLogs(page = 1, limit = 10, search = '', plantId = undefined, date = '') {
+    let filtered = [...this.attendance];
+
+    const targetPlantId = plantId ? Number(plantId) : this.currentUser?.plant_id;
+    if (targetPlantId) {
+      filtered = filtered.filter((a) => a.plant_id === Number(targetPlantId));
+    } else {
+      filtered = [];
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (a) =>
+          a.employee_name.toLowerCase().includes(q) ||
+          a.employee_email.toLowerCase().includes(q) ||
+          a.qr_token.toLowerCase().includes(q) ||
+          a.plant_name.toLowerCase().includes(q)
+      );
+    }
+
+    if (date) {
+      filtered = filtered.filter((a) => a.entry_date === date);
+    }
+
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const startIndex = (page - 1) * limit;
+    const data = filtered.slice(startIndex, startIndex + limit);
+
+    return {
+      data,
+      pagination: { page, limit, total, totalPages },
+    };
   }
 }
 

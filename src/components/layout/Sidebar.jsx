@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Factory, Layers, Video, ShieldAlert, Shield, X } from 'lucide-react';
+import { LayoutDashboard, Users, Factory, Layers, Video, ShieldAlert, Shield, User, X, QrCode } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { StatusBadge } from '../common/StatusBadge.jsx';
 import { normalizeRole, getRolePath } from '../../utils/roleUtils.js';
@@ -22,6 +22,13 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       roles: ['super_admin', 'admin', 'manager', 'operator'],
     },
     {
+      id: 'qr-entry',
+      label: 'QR Code Employee Entry',
+      path: `${basePath}/qr-entry`,
+      icon: <QrCode className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
       id: 'users',
       label: 'User Management',
       path: `${basePath}/users`,
@@ -30,10 +37,10 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
     },
     {
       id: 'plants',
-      label: 'Plant Network',
+      label: 'Plant Overview',
       path: `${basePath}/plants`,
       icon: <Factory className="w-4 h-4" />,
-      roles: ['super_admin'],
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
     },
     {
       id: 'zones',
@@ -54,6 +61,13 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       label: 'Audit & Incident Logs',
       path: `${basePath}/activity`,
       icon: <ShieldAlert className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
+      id: 'profile',
+      label: 'My Profile',
+      path: `${basePath}/profile`,
+      icon: <User className="w-4 h-4" />,
       roles: ['super_admin', 'admin', 'manager', 'operator'],
     },
   ];
@@ -105,14 +119,16 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           Navigation
         </div>
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            location.pathname === item.path ||
+            (item.id !== 'dashboard' && location.pathname.startsWith(`${item.path}`));
           return (
             <button
               key={item.id}
               onClick={() => handleItemClick(item.path)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700 font-semibold border-r-2 border-indigo-600'
+                  ? 'bg-indigo-50 text-indigo-700 font-semibold border-r-2 border-indigo-600 shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
               }`}
             >
@@ -132,7 +148,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block min-h-screen">
+      <div className="hidden md:block sticky top-0 h-screen shrink-0">
         {sidebarContent}
       </div>
 
@@ -143,7 +159,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
             onClick={onCloseMobile}
           />
-          <div className="relative z-10">
+          <div className="relative z-10 h-full">
             {sidebarContent}
           </div>
         </div>

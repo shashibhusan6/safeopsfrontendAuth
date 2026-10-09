@@ -4,9 +4,12 @@ import { StatusBadge } from '../common/StatusBadge.jsx';
 import { Pagination } from '../common/Pagination.jsx';
 import { UserModal } from './UserModal.jsx';
 import { ConfirmDialog } from '../common/ConfirmDialog.jsx';
+import { EmployeeQRBadgeModal } from '../common/EmployeeQRBadgeModal.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { Search, UserPlus, Power, Edit3, Trash2, Filter } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect.jsx';
+import { Search, UserPlus, Power, Edit3, Trash2, Filter, QrCode } from 'lucide-react';
 
 export const UserList = () => {
   const { user: currentUser } = useAuth();
@@ -24,6 +27,7 @@ export const UserList = () => {
 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [selectedQRUser, setSelectedQRUser] = useState(null);
 
   const [targetActionUser, setTargetActionUser] = useState(null);
 
@@ -127,13 +131,16 @@ export const UserList = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-            User Accounts & RBAC Control
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage users, permissions, active statuses, and plant assignments.
-          </p>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              User Accounts & RBAC Control
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Manage users, permissions, active statuses, and plant assignments.
+            </p>
+          </div>
         </div>
 
         <button
@@ -166,35 +173,39 @@ export const UserList = () => {
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
-          <select
+          <Filter className="w-4 h-4 text-slate-400 shrink-0 hidden md:block" />
+          <CustomSelect
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full md:w-44 px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-xs sm:text-sm focus:outline-none focus:border-indigo-600"
-          >
-            <option value="">All Roles</option>
-            <option value="super_admin">Super Admin</option>
-            <option value="admin">Plant Admin</option>
-            <option value="manager">Manager</option>
-            <option value="operator">Operator</option>
-          </select>
+            options={[
+              { value: '', label: 'All Roles' },
+              { value: 'super_admin', label: 'Super Admin' },
+              { value: 'admin', label: 'Plant Admin' },
+              { value: 'manager', label: 'Manager' },
+              { value: 'operator', label: 'Operator' },
+            ]}
+            className="w-full md:w-44"
+            size="sm"
+          />
         </div>
 
         <div className="w-full md:w-auto">
-          <select
+          <CustomSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-40 px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 text-xs sm:text-sm focus:outline-none focus:border-indigo-600"
-          >
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="disabled">Disabled</option>
-          </select>
+            options={[
+              { value: '', label: 'All Statuses' },
+              { value: 'active', label: 'Active' },
+              { value: 'disabled', label: 'Disabled' },
+            ]}
+            className="w-full md:w-40"
+            size="sm"
+          />
         </div>
       </div>
 
       <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto touch-scroll">
           <table className="w-full text-left text-xs sm:text-sm text-slate-700">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <tr>
@@ -251,6 +262,14 @@ export const UserList = () => {
                     </td>
 
                     <td className="px-5 py-3.5 text-right space-x-1">
+                      <button
+                        onClick={() => setSelectedQRUser(u)}
+                        title="View / Print Employee QR Pass Badge"
+                        className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
+
                       <button
                         onClick={() => {
                           if (isOperator) {
@@ -353,6 +372,14 @@ export const UserList = () => {
               ? 'success'
               : 'danger'
           }
+        />
+      )}
+
+      {selectedQRUser && (
+        <EmployeeQRBadgeModal
+          isOpen={true}
+          onClose={() => setSelectedQRUser(null)}
+          employee={selectedQRUser}
         />
       )}
     </div>

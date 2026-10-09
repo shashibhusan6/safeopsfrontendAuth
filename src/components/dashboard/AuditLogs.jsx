@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldAlert, ShieldCheck, Power } from 'lucide-react';
+import { BackButton } from '../common/BackButton.jsx';
 
 export const AuditLogs = () => {
   const sampleAuditLogs = [
@@ -47,13 +48,16 @@ export const AuditLogs = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          System Audit & Security Logs
-        </h2>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Real-time tracking of authorization events, status changes, and RBAC security enforcement.
-        </p>
+      <div className="flex items-center gap-3">
+        <BackButton />
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            System Audit & Security Logs
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time tracking of authorization events, status changes, and RBAC security enforcement.
+          </p>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs p-6">

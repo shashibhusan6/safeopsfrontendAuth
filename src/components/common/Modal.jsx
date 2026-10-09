@@ -30,9 +30,9 @@ export const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-xs overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-xs overflow-y-auto overscroll-contain modal-backdrop-animate">
       <div
-        className={`relative w-full ${widthClasses[maxWidth]} max-h-[90vh] flex flex-col bg-white border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden`}
+        className={`relative w-full ${widthClasses[maxWidth]} max-h-[90vh] flex flex-col bg-white border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden modal-content-animate`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/80 bg-white shrink-0">
           <div>
@@ -41,13 +41,13 @@ export const Modal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1 overscroll-contain touch-scroll">{children}</div>
       </div>
     </div>
   );

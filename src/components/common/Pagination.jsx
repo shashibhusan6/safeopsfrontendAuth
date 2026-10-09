@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CustomSelect } from './CustomSelect.jsx';
 
 export const Pagination = ({ meta, onPageChange, onLimitChange }) => {
   const { page, limit, total, totalPages } = meta;
@@ -18,16 +19,18 @@ export const Pagination = ({ meta, onPageChange, onLimitChange }) => {
         {onLimitChange && (
           <div className="flex items-center gap-1.5 ml-2">
             <span className="text-slate-400">Per page:</span>
-            <select
+            <CustomSelect
               value={limit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
-              className="bg-white text-slate-800 border border-slate-300 rounded px-2 py-1 focus:outline-none focus:border-indigo-600"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+              options={[
+                { value: 5, label: '5' },
+                { value: 10, label: '10' },
+                { value: 20, label: '20' },
+                { value: 50, label: '50' },
+              ]}
+              size="sm"
+              className="w-20"
+            />
           </div>
         )}
       </div>

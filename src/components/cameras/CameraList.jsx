@@ -1,21 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { camerasApi } from '../../api/camerasApi.js';
 import { zonesApi } from '../../api/zonesApi.js';
 import { plantsApi } from '../../api/plantsApi.js';
 import { StatusBadge } from '../common/StatusBadge.jsx';
 import { Pagination } from '../common/Pagination.jsx';
 import { CameraModal } from './CameraModal.jsx';
+import { BulkCameraModal } from './BulkCameraModal.jsx';
 import { CameraFeedModal } from './CameraFeedModal.jsx';
 import { ConfirmDialog } from '../common/ConfirmDialog.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { Plus, Power, Edit3, Trash2, Eye, Search, Layers, Factory, Filter } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect.jsx';
+import { normalizeRole, getRolePath } from '../../utils/roleUtils.js';
+import { Plus, Power, Edit3, Trash2, Eye, Search, Layers, Factory, Filter, Video, ExternalLink } from 'lucide-react';
 
 export const CameraList = () => {
   const { user } = useAuth();
   const { addToast, showForbiddenAlert } = useToast();
+  const navigate = useNavigate();
 
-  const isOperator = user?.role === 'operator';
+  const activeRole = normalizeRole(user?.role);
+  const basePath = getRolePath(activeRole);
+  const isSuperAdmin = activeRole === 'super_admin';
+  const isOperator = activeRole === 'operator';
 
   const [cameras, setCameras] = useState([]);
   const [plants, setPlants] = useState([]);
@@ -31,6 +40,7 @@ export const CameraList = () => {
   const [statusFilter, setStatusFilter] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingCamera, setEditingCamera] = useState(null);
 
   const [viewingFeedCamera, setViewingFeedCamera] = useState(null);
@@ -174,30 +184,48 @@ export const CameraList = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            AI Camera Feeds & Stream Matrix
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitor optical feeds, RTSP links, operational states, and plant/zone ingest controls.
-          </p>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              AI Camera Feeds & Stream Matrix
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Monitor optical feeds, RTSP links, operational states, and plant/zone ingest controls.
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={() => {
-            if (isOperator) {
-              showForbiddenAlert();
-              return;
-            }
-            setEditingCamera(null);
-            setIsModalOpen(true);
-          }}
-          disabled={isOperator}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-xs transition flex items-center gap-2 text-sm disabled:opacity-40 shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Add Camera
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          {!isOperator && (
+            <button
+              onClick={() => {
+                setIsBulkModalOpen(true);
+              }}
+              className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-xs transition flex items-center gap-1.5 text-xs sm:text-sm"
+              title="Super Admin Batch Provisioning: Register multiple camera feeds at once"
+            >
+              <Video className="w-4 h-4" />
+              Bulk Add Cameras
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              if (isOperator) {
+                showForbiddenAlert();
+                return;
+              }
+              setEditingCamera(null);
+              setIsModalOpen(true);
+            }}
+            disabled={isOperator}
+            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-xs transition flex items-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+          >
+            <Plus className="w-4 h-4" />
+            Add Camera
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar: Filter by Plant & Zone */}
@@ -207,18 +235,18 @@ export const CameraList = () => {
           <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center gap-1">
             <Factory className="w-3 h-3 text-indigo-600" /> Plant Filter
           </label>
-          <select
+          <CustomSelect
             value={selectedPlantId ?? ''}
             onChange={(e) => handlePlantChange(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
-          >
-            <option value="">All Plants ({plants.length})</option>
-            {plants.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.status === 'active' ? 'Active' : 'Inactive'})
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: `All Plants (${plants.length})` },
+              ...plants.map((p) => ({
+                value: p.id,
+                label: `${p.name} (${p.status === 'active' ? 'Active' : 'Inactive'})`,
+              })),
+            ]}
+            size="sm"
+          />
         </div>
 
         {/* Zone Selector Filter */}
@@ -226,22 +254,23 @@ export const CameraList = () => {
           <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center gap-1">
             <Layers className="w-3 h-3 text-purple-600" /> Zone Filter
           </label>
-          <select
+          <CustomSelect
             value={selectedZoneId ?? ''}
             onChange={(e) => setSelectedZoneId(e.target.value ? Number(e.target.value) : undefined)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-purple-500 focus:bg-white"
-          >
-            <option value="">
-              {selectedPlantName
-                ? `All Zones in ${selectedPlantName}`
-                : `All Zones (${zones.length})`}
-            </option>
-            {filteredZones.map((z) => (
-              <option key={z.id} value={z.id}>
-                {z.name} ({z.status})
-              </option>
-            ))}
-          </select>
+            options={[
+              {
+                value: '',
+                label: selectedPlantName
+                  ? `All Zones in ${selectedPlantName}`
+                  : `All Zones (${zones.length})`,
+              },
+              ...filteredZones.map((z) => ({
+                value: z.id,
+                label: `${z.name} (${z.status})`,
+              })),
+            ]}
+            size="sm"
+          />
         </div>
 
         {/* Search */}
@@ -256,7 +285,7 @@ export const CameraList = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search camera name, protocol, plant, zone..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition"
             />
           </div>
         </div>
@@ -266,17 +295,18 @@ export const CameraList = () => {
           <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">
             Stream Status
           </label>
-          <select
+          <CustomSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white"
-          >
-            <option value="">All Statuses</option>
-            <option value="active">Enabled (is_active: true)</option>
-            <option value="inactive">Disabled (is_active: false)</option>
-            <option value="online">Online Streams</option>
-            <option value="offline">Offline Streams</option>
-          </select>
+            options={[
+              { value: '', label: 'All Statuses' },
+              { value: 'active', label: 'Enabled (is_active: true)' },
+              { value: 'inactive', label: 'Disabled (is_active: false)' },
+              { value: 'online', label: 'Online Streams' },
+              { value: 'offline', label: 'Offline Streams' },
+            ]}
+            size="sm"
+          />
         </div>
       </div>
 
@@ -353,11 +383,16 @@ export const CameraList = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                        <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <div
+                        onClick={() => navigate(`${basePath}/zones/${c.zone_id}`)}
+                        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 font-medium cursor-pointer transition group/zone"
+                        title="Click to view Zone Details"
+                      >
+                        <Layers className="w-3.5 h-3.5 text-slate-400 group-hover/zone:text-indigo-600 shrink-0" />
                         <span className="truncate">
                           {parentZone ? parentZone.name : `Zone #${c.zone_id}`}
                         </span>
+                        <ExternalLink className="w-3 h-3 opacity-0 group-hover/zone:opacity-100 transition" />
                       </div>
                     </div>
                   </div>
@@ -438,6 +473,14 @@ export const CameraList = () => {
         onSubmit={handleCameraSubmit}
         editCamera={editingCamera}
         defaultZoneId={selectedZoneId}
+      />
+
+      <BulkCameraModal
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        onSuccess={fetchCameras}
+        defaultZoneId={selectedZoneId}
+        defaultPlantId={selectedPlantId}
       />
 
       <CameraFeedModal

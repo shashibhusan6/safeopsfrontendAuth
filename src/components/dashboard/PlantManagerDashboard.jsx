@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { zonesApi } from '../../api/zonesApi.js';
 import { camerasApi } from '../../api/camerasApi.js';
 import { StatusBadge } from '../common/StatusBadge.jsx';
+import { AttendanceLogTable } from '../common/AttendanceLogTable.jsx';
+import { BackButton } from '../common/BackButton.jsx';
 import { Layers, Video, ShieldAlert, ArrowRight, Activity, Clock } from 'lucide-react';
 
 export const PlantManagerDashboard = () => {
@@ -41,10 +43,19 @@ export const PlantManagerDashboard = () => {
       {/* Manager Hero Banner */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3">
-            <Activity className="w-4 h-4 text-blue-600" /> Plant Manager Operational Portal
+          <div className="flex items-center gap-2 mb-3">
+            <BackButton />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
+              <Activity className="w-4 h-4 text-blue-600" /> Plant Manager Operational Portal
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1
+            onClick={() => user?.plant_id && navigate(`/plant-manager/plants/${user.plant_id}`)}
+            className={`text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight ${
+              user?.plant_id ? 'cursor-pointer hover:text-indigo-600 transition' : ''
+            }`}
+            title={user?.plant_id ? 'Click to view Plant Facility Details' : ''}
+          >
             {plantName} Operational Hub
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
@@ -131,9 +142,16 @@ export const PlantManagerDashboard = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {zones.map((z) => (
-                <tr key={z.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-3 px-4 font-mono text-blue-700 font-medium">#ZONE-{z.id}</td>
-                  <td className="py-3 px-4 font-semibold text-slate-900">{z.name}</td>
+                <tr
+                  key={z.id}
+                  onClick={() => navigate(`/plant-manager/zones/${z.id}`)}
+                  className="hover:bg-slate-50/80 transition cursor-pointer group"
+                >
+                  <td className="py-3 px-4 font-mono text-blue-700 font-medium group-hover:text-indigo-600">#ZONE-{z.id}</td>
+                  <td className="py-3 px-4 font-semibold text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                    {z.name}
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition text-indigo-600" />
+                  </td>
                   <td className="py-3 px-4">
                     <StatusBadge type="severity" value={z.severity_level} />
                   </td>
@@ -150,6 +168,9 @@ export const PlantManagerDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Live Attendance QR Code Entry Log Table */}
+      <AttendanceLogTable plantId={user?.plant_id} title={`Live Plant Employee Entry & Attendance Feed - ${plantName}`} />
     </div>
   );
 };

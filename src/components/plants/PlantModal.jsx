@@ -495,6 +495,106 @@ export const PlantModal = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Integrated Camera Streams inside Zone */}
+                <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                      <Video className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Integrated Camera Streams ({zone.cameras?.length || 0})</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAddCamera(zIdx)}
+                      className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-md text-[11px] transition flex items-center gap-1 border border-indigo-200/60"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Camera
+                    </button>
+                  </div>
+
+                  {zone.cameras && zone.cameras.length > 0 ? (
+                    <div className="space-y-2">
+                      {zone.cameras.map((camera, cIdx) => (
+                        <div
+                          key={camera.tempId || cIdx}
+                          className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2"
+                        >
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                            <div className="sm:col-span-5">
+                              <label className="block text-[10px] font-medium text-slate-500 mb-0.5 uppercase tracking-wider">
+                                Camera Name
+                              </label>
+                              <input
+                                type="text"
+                                value={camera.name}
+                                onChange={(e) =>
+                                  handleCameraChange(zIdx, cIdx, 'name', e.target.value)
+                                }
+                                placeholder={`e.g. Camera ${cIdx + 1}`}
+                                className="w-full px-2.5 py-1 bg-white border border-slate-300 rounded text-slate-900 text-xs focus:outline-none focus:border-indigo-600"
+                                required
+                              />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                              <label className="block text-[10px] font-medium text-slate-500 mb-0.5 uppercase tracking-wider">
+                                Feed Type
+                              </label>
+                              <select
+                                value={camera.feed_type}
+                                onChange={(e) =>
+                                  handleCameraChange(zIdx, cIdx, 'feed_type', e.target.value)
+                                }
+                                className="w-full px-2 py-1 bg-white border border-slate-300 rounded text-slate-900 text-xs focus:outline-none focus:border-indigo-600"
+                              >
+                                <option value="simulated">Simulated AI Feed</option>
+                                <option value="rtsp">RTSP Stream</option>
+                                <option value="upload">Video File Upload</option>
+                              </select>
+                            </div>
+
+                            <div className="sm:col-span-3">
+                              <label className="block text-[10px] font-medium text-slate-500 mb-0.5 uppercase tracking-wider">
+                                Feed URL / Source
+                              </label>
+                              <input
+                                type="text"
+                                value={camera.feed_url_or_path}
+                                onChange={(e) =>
+                                  handleCameraChange(
+                                    zIdx,
+                                    cIdx,
+                                    'feed_url_or_path',
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="rtsp://... or https://..."
+                                className="w-full px-2 py-1 bg-white border border-slate-300 rounded text-slate-900 text-[11px] font-mono focus:outline-none focus:border-indigo-600 truncate"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-1 flex justify-end pt-3 sm:pt-0">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCamera(zIdx, cIdx)}
+                                title="Remove Camera"
+                                className="p-1 text-slate-400 hover:text-rose-600 rounded transition"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-2.5 bg-slate-50/60 border border-dashed border-slate-200 rounded-lg text-center text-slate-400 text-xs">
+                      No camera streams added to this zone yet. Click <span className="font-semibold text-indigo-600">+ Add Camera</span> to attach a stream.
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

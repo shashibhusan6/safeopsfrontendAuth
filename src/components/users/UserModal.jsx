@@ -35,13 +35,7 @@ export const UserModal = ({
         setName('');
         setEmail('');
         setRole('operator');
-        setPlantId(isSuperAdmin ? null : currentUser?.plant_id || null);
-      }
-
-      if (isSuperAdmin) {
-        plantsApi.getPlants(1, 100).then((res) => {
-          setAvailablePlants(res.data);
-        }).catch(() => {});
+        setPlantId(currentUser?.plant_id || null);
       }
     }
   }, [isOpen, editUser, isSuperAdmin, currentUser]);
@@ -58,7 +52,7 @@ export const UserModal = ({
         name,
         email,
         role,
-        plant_id: role === 'super_admin' ? null : plantId,
+        plant_id: plantId || currentUser?.plant_id || null,
       });
       onClose();
     } catch (err) {
@@ -131,28 +125,12 @@ export const UserModal = ({
             <label className="block text-xs font-medium text-slate-700 mb-1.5 uppercase tracking-wider">
               Assigned Plant Location
             </label>
-            {isSuperAdmin ? (
-              <select
-                value={plantId ?? ''}
-                onChange={(e) => setPlantId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-indigo-600"
-                disabled={role === 'super_admin' || isOperator}
-              >
-                <option value="">-- Unassigned (Global / Pending) --</option>
-                {availablePlants.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={currentUser?.plant?.name || `Plant ID: ${currentUser?.plant_id}`}
-                disabled
-                className="w-full px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-sm cursor-not-allowed"
-              />
-            )}
+            <input
+              type="text"
+              value={currentUser?.plant?.name || (currentUser?.plant_id ? `Plant ID: ${currentUser?.plant_id}` : 'Unassigned')}
+              disabled
+              className="w-full px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-sm cursor-not-allowed font-medium"
+            />
           </div>
         </div>
 

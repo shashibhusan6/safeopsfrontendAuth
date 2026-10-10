@@ -22,6 +22,12 @@ import { ProfilePage } from './components/profile/ProfilePage.jsx';
 import { QREntryPage } from './components/attendance/QREntryPage.jsx';
 import { normalizeRole, getRolePath } from './utils/roleUtils.js';
 
+import { SafetyRulesPage } from './components/rules/SafetyRulesPage.jsx';
+import { CameraRegionEditor } from './components/regions/CameraRegionEditor.jsx';
+import { VideoUploadProcessingPage } from './components/videos/VideoUploadProcessingPage.jsx';
+import { DetectionEventsPage } from './components/events/DetectionEventsPage.jsx';
+import { IncidentReviewDashboard } from './components/incidents/IncidentReviewDashboard.jsx';
+
 const AppContent = () => {
   const [inviteToken, setInviteToken] = useState(null);
 
@@ -122,6 +128,46 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/super-admin/safety-rules"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <SafetyRulesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/camera-regions"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <CameraRegionEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/video-processing"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <VideoUploadProcessingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/detection-events"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <DetectionEventsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/super-admin/incidents"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <IncidentReviewDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/super-admin/qr-entry"
         element={
           <ProtectedRoute allowedRoles={['super_admin']}>
@@ -204,6 +250,46 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/admin/safety-rules"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <SafetyRulesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/camera-regions"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <CameraRegionEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/video-processing"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <VideoUploadProcessingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/detection-events"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DetectionEventsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/incidents"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <IncidentReviewDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/qr-entry"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
@@ -278,6 +364,46 @@ const AppContent = () => {
         }
       />
       <Route
+        path="/plant-manager/safety-rules"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <SafetyRulesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/camera-regions"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <CameraRegionEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/video-processing"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <VideoUploadProcessingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/detection-events"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <DetectionEventsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plant-manager/incidents"
+        element={
+          <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
+            <IncidentReviewDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/plant-manager/qr-entry"
         element={
           <ProtectedRoute allowedRoles={['manager', 'plant_manager']}>
@@ -348,6 +474,46 @@ const AppContent = () => {
         element={
           <ProtectedRoute allowedRoles={['operator']}>
             <AuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/safety-rules"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <SafetyRulesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/camera-regions"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <CameraRegionEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/video-processing"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <VideoUploadProcessingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/detection-events"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <DetectionEventsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/incidents"
+        element={
+          <ProtectedRoute allowedRoles={['operator']}>
+            <IncidentReviewDashboard />
           </ProtectedRoute>
         }
       />

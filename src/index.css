@@ -1,14 +1,153 @@
 @import "tailwindcss";
 
+@theme {
+  /* High-Contrast Industrial Color Palette */
+  --color-slate-50: #E9EDF0;
+  --color-slate-100: #E1E7EC;
+  --color-slate-200: #B8C2CC;
+  --color-slate-300: #93A1B0;
+  --color-slate-400: #697581;
+  --color-slate-500: #465564;
+  --color-slate-600: #354654;
+  --color-slate-700: #29465F;
+  --color-slate-800: #17212B;
+  --color-slate-900: #202A33;
+  --color-slate-950: #121920;
+
+  --color-indigo-50: #EBF2F7;
+  --color-indigo-100: #D8E4EE;
+  --color-indigo-200: #B8C2CC;
+  --color-indigo-300: #697581;
+  --color-indigo-400: #465564;
+  --color-indigo-500: #354654;
+  --color-indigo-600: #29465F;
+  --color-indigo-700: #1D354A;
+  --color-indigo-800: #17212B;
+  --color-indigo-900: #202A33;
+  --color-indigo-950: #121920;
+
+  --color-emerald-50: #E6F4ED;
+  --color-emerald-100: #C2E7D5;
+  --color-emerald-200: #99D7B9;
+  --color-emerald-300: #60C295;
+  --color-emerald-400: #2EA06C;
+  --color-emerald-500: #176B45;
+  --color-emerald-600: #176B45;
+  --color-emerald-700: #114F33;
+  --color-emerald-800: #0C3824;
+  --color-emerald-900: #072216;
+  --color-emerald-950: #04120B;
+
+  --color-amber-50: #FFF6E5;
+  --color-amber-100: #FFE6BA;
+  --color-amber-200: #FFD28A;
+  --color-amber-300: #EAA842;
+  --color-amber-400: #C57F12;
+  --color-amber-500: #8A5800;
+  --color-amber-600: #8A5800;
+  --color-amber-700: #6B4400;
+  --color-amber-800: #4D3100;
+  --color-amber-900: #332100;
+
+  --color-rose-50: #FDEEEE;
+  --color-rose-100: #FAD4D4;
+  --color-rose-200: #F4AAB0;
+  --color-rose-300: #E67881;
+  --color-rose-400: #C74545;
+  --color-rose-500: #A52828;
+  --color-rose-600: #A52828;
+  --color-rose-700: #801D1D;
+  --color-rose-800: #5C1313;
+  --color-rose-900: #3A0C0C;
+
+  /* Neutralized Decorative Accents (Purple, Blue, Cyan, Teal) */
+  --color-purple-50: #E9EDF0;
+  --color-purple-100: #E1E7EC;
+  --color-purple-200: #B8C2CC;
+  --color-purple-300: #697581;
+  --color-purple-400: #465564;
+  --color-purple-500: #354654;
+  --color-purple-600: #29465F;
+  --color-purple-700: #17212B;
+  --color-purple-800: #202A33;
+  --color-purple-900: #121920;
+
+  --color-blue-50: #E9EDF0;
+  --color-blue-100: #E1E7EC;
+  --color-blue-200: #B8C2CC;
+  --color-blue-300: #697581;
+  --color-blue-400: #465564;
+  --color-blue-500: #354654;
+  --color-blue-600: #29465F;
+  --color-blue-700: #17212B;
+  --color-blue-800: #202A33;
+  --color-blue-900: #121920;
+
+  --color-cyan-50: #E9EDF0;
+  --color-cyan-100: #E1E7EC;
+  --color-cyan-200: #B8C2CC;
+  --color-cyan-300: #697581;
+  --color-cyan-400: #465564;
+  --color-cyan-500: #29465F;
+  --color-cyan-600: #17212B;
+
+  --color-teal-50: #E6F4ED;
+  --color-teal-100: #C2E7D5;
+  --color-teal-200: #99D7B9;
+  --color-teal-600: #176B45;
+  --color-teal-700: #114F33;
+
+  /* Industrial Restrained Radii (3px - 6px) */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 6px;
+  --radius-3xl: 6px;
+
+  /* High Contrast Industrial Shadows */
+  --shadow-2xs: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+
+:root {
+  --industrial-bg: #E9EDF0;
+  --industrial-surface: #FFFFFF;
+  --industrial-sidebar-bg: #202A33;
+  --industrial-sidebar-border: #324250;
+  --industrial-sidebar-hover: #2F3E4C;
+  --industrial-sidebar-active: #354654;
+  --industrial-sidebar-active-indicator: #4D91C6;
+  --industrial-sidebar-text: #C2CBD3;
+  --industrial-text-primary: #17212B;
+  --industrial-text-secondary: #465564;
+  --industrial-border: #B8C2CC;
+  --industrial-action-primary: #29465F;
+  --industrial-action-hover: #1D354A;
+  --industrial-hover: #E1E7EC;
+  --industrial-success: #176B45;
+  --industrial-warning: #8A5800;
+  --industrial-error: #A52828;
+  --industrial-disabled: #697581;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
+    background-color: var(--industrial-bg);
   }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--industrial-bg);
+    color: var(--industrial-text-primary);
+    font-weight: 450;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -16,99 +155,560 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Universal Interactive Elements Smooth Transitions */
+  ::selection {
+    background-color: var(--industrial-action-primary);
+    color: #FFFFFF;
+  }
+
+  /* Universal Interactive Elements Transitions */
   button, a, input, select, textarea {
-    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
-    transition-duration: 0.18s;
-    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-property: color, background-color, border-color, box-shadow, opacity;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-in-out;
   }
 
   button:active:not(:disabled) {
-    transform: scale(0.985);
+    transform: none;
   }
 
-  /* Cross-browser modern select styling */
+  /* Form Controls Reset & Industrial Precision */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="search"],
+  textarea {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--industrial-border) !important;
+    border-radius: 4px !important;
+    color: var(--industrial-text-primary) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--industrial-disabled) !important;
+    font-weight: 400 !important;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: none !important;
+    border-color: var(--industrial-action-primary) !important;
+    box-shadow: 0 0 0 2px rgba(41, 70, 95, 0.2) !important;
+  }
+
+  /* Native & Custom Select Styling */
   select {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--industrial-border) !important;
+    border-radius: 4px !important;
+    color: var(--industrial-text-primary) !important;
+    font-weight: 500 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23465564' stroke-width='2.2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
-    background-size: 1rem;
+    background-size: 0.875rem;
     padding-right: 2.25rem;
   }
 
   select:hover {
-    border-color: #818cf8;
-    background-color: #faf5ff;
+    border-color: var(--industrial-action-primary) !important;
+    background-color: var(--industrial-hover) !important;
   }
 
   select:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-  }
-
-  input:focus, textarea:focus {
-    outline: none;
+    outline: none !important;
+    border-color: var(--industrial-action-primary) !important;
+    box-shadow: 0 0 0 2px rgba(41, 70, 95, 0.2) !important;
   }
 }
 
-/* Firefox Custom Scrollbar */
+/* -------------------------------------------------------------
+   GLOBAL TEXT CONTRAST & READABILITY ENHANCEMENTS
+------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--industrial-text-primary) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+
+.text-slate-900,
+.text-slate-800 {
+  color: #17212B !important;
+}
+
+.text-slate-700,
+.text-slate-600 {
+  color: #2D3D4D !important;
+}
+
+.text-slate-500,
+.text-slate-400 {
+  color: #465564 !important;
+}
+
+/* Specific text color contrast boosts */
+.text-indigo-600,
+.text-indigo-700 {
+  color: #29465F !important;
+  font-weight: 600;
+}
+
+.text-emerald-700,
+.text-emerald-600 {
+  color: #176B45 !important;
+  font-weight: 600;
+}
+
+.text-amber-700,
+.text-amber-600,
+.text-amber-800 {
+  color: #8A5800 !important;
+  font-weight: 600;
+}
+
+.text-rose-700,
+.text-rose-600 {
+  color: #A52828 !important;
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------
+   CARD SURFACES & CONTAINER BOUNDARIES
+------------------------------------------------------------- */
+.bg-white {
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--industrial-border) !important;
+}
+
+.bg-slate-50 {
+  background-color: #E9EDF0 !important;
+  border: 1px solid var(--industrial-border) !important;
+}
+
+/* Replace all decorative gradients with solid SCADA panels */
+[class*="bg-gradient-to"] {
+  background-image: none !important;
+  background-color: #202A33 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #324250 !important;
+}
+
+/* Eliminate excessive glowing effects and heavy backdrop blurs */
+.backdrop-blur-xs,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl {
+  backdrop-filter: none !important;
+}
+
+/* Standardize card borders & shadows to flat industrial panels */
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: 4px !important;
+}
+
+.shadow-xs,
+.shadow-sm,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* -------------------------------------------------------------
+   SIDEBAR — GRAPHITE SCADA CONTROL PANEL STYLING
+------------------------------------------------------------- */
+aside,
+[class*="w-64"] {
+  background-color: var(--industrial-sidebar-bg) !important;
+  border-right: 1px solid var(--industrial-sidebar-border) !important;
+}
+
+/* Sidebar header & brand bar */
+aside .border-b,
+[class*="w-64"] .border-b {
+  border-bottom-color: var(--industrial-sidebar-border) !important;
+}
+
+aside h1,
+[class*="w-64"] h1 {
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+}
+
+aside p,
+[class*="w-64"] p {
+  color: var(--industrial-sidebar-text) !important;
+  font-weight: 500 !important;
+}
+
+/* Role container box inside sidebar */
+aside .bg-slate-50,
+[class*="w-64"] .bg-slate-50 {
+  background-color: #17222C !important;
+  border-color: var(--industrial-sidebar-border) !important;
+  border-radius: 4px !important;
+}
+
+aside .text-slate-500,
+[class*="w-64"] .text-slate-500 {
+  color: #9AA8B4 !important;
+  font-weight: 600 !important;
+}
+
+aside .text-slate-600,
+[class*="w-64"] .text-slate-600,
+aside .text-slate-900,
+[class*="w-64"] .text-slate-900 {
+  color: #E1E7EC !important;
+  font-weight: 600 !important;
+}
+
+/* Sidebar navigation buttons */
+aside nav button,
+[class*="w-64"] nav button {
+  border-radius: 4px !important;
+  color: var(--industrial-sidebar-text) !important;
+  font-weight: 500 !important;
+}
+
+aside nav button:hover,
+[class*="w-64"] nav button:hover {
+  background-color: var(--industrial-sidebar-hover) !important;
+  color: #FFFFFF !important;
+}
+
+/* Active navigation item indicator */
+aside nav button.bg-indigo-50,
+[class*="w-64"] nav button.bg-indigo-50,
+aside nav button[class*="text-indigo-700"],
+[class*="w-64"] nav button[class*="text-indigo-700"] {
+  background-color: var(--industrial-sidebar-active) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  border-left: 4px solid var(--industrial-sidebar-active-indicator) !important;
+  border-right: none !important;
+
+  svg {
+    color: #FFFFFF !important;
+  }
+}
+
+/* -------------------------------------------------------------
+   TOP HEADER BAR STYLING
+------------------------------------------------------------- */
+header {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid var(--industrial-border) !important;
+}
+
+header .bg-slate-100\/80 {
+  background-color: var(--industrial-bg) !important;
+  border-color: var(--industrial-border) !important;
+  border-radius: 4px !important;
+  color: var(--industrial-text-primary) !important;
+}
+
+/* QR Code Employee Entry Top Header Button */
+header button.bg-indigo-600 {
+  background-color: var(--industrial-action-primary) !important;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+
+  &:hover {
+    background-color: var(--industrial-action-hover) !important;
+  }
+}
+
+/* User avatar */
+header .rounded-full.bg-slate-900 {
+  background-color: var(--industrial-sidebar-bg) !important;
+  border-radius: 50% !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+/* -------------------------------------------------------------
+   BUTTONS — HIGH CONTRAST SOLID VARIANTS
+------------------------------------------------------------- */
+/* Primary Buttons */
+button.bg-indigo-600,
+button.bg-indigo-700,
+button[class*="bg-indigo-600"] {
+  background-color: var(--industrial-action-primary) !important;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  border: 1px solid #1D354A !important;
+
+  &:hover:not(:disabled) {
+    background-color: var(--industrial-action-hover) !important;
+  }
+}
+
+/* Destructive / Danger Buttons */
+button.bg-rose-600,
+button.bg-rose-700 {
+  background-color: var(--industrial-error) !important;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+
+  &:hover:not(:disabled) {
+    background-color: #801D1D !important;
+  }
+}
+
+/* Warning Buttons */
+button.bg-amber-600,
+button.bg-amber-700 {
+  background-color: var(--industrial-warning) !important;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+
+  &:hover:not(:disabled) {
+    background-color: #6B4400 !important;
+  }
+}
+
+/* Success Buttons */
+button.bg-emerald-600,
+button.bg-emerald-700 {
+  background-color: var(--industrial-success) !important;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+
+  &:hover:not(:disabled) {
+    background-color: #114F33 !important;
+  }
+}
+
+/* Neutral Secondary Buttons */
+button.border-slate-300,
+button.border-slate-200,
+button.bg-white {
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--industrial-border) !important;
+  border-radius: 4px !important;
+  color: var(--industrial-text-primary) !important;
+  font-weight: 600 !important;
+
+  &:hover:not(:disabled) {
+    background-color: var(--industrial-hover) !important;
+  }
+}
+
+/* Disabled State */
+button:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+/* -------------------------------------------------------------
+   TABLES & DATA GRIDS — SCADA HIGH READABILITY FORMAT
+------------------------------------------------------------- */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead {
+  background-color: var(--industrial-bg) !important;
+
+  th {
+    color: var(--industrial-action-primary) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 2px solid var(--industrial-border) !important;
+    padding: 11px 14px !important;
+  }
+}
+
+tbody {
+  tr {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E1E7EC;
+
+    &:hover {
+      background-color: #F0F4F7 !important;
+    }
+
+    td {
+      padding: 11px 14px !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: var(--industrial-text-primary) !important;
+      border-bottom: 1px solid #E1E7EC !important;
+    }
+  }
+}
+
+/* Timestamp, Code & Numerical Data Alignment */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  color: var(--industrial-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* -------------------------------------------------------------
+   STATUS BADGES — HIGH CONTRAST RESTRAINED INDICATORS
+------------------------------------------------------------- */
+span[class*="rounded-full"][class*="border"] {
+  border-radius: 3px !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+}
+
+/* Active / Operational / Success */
+.bg-emerald-50 {
+  background-color: #E6F4ED !important;
+  border-color: #99D7B9 !important;
+  color: var(--industrial-success) !important;
+}
+
+/* Warning / Pending / Inactive */
+.bg-amber-50 {
+  background-color: #FFF6E5 !important;
+  border-color: #FFD28A !important;
+  color: var(--industrial-warning) !important;
+}
+
+/* Critical / Error / Disabled */
+.bg-rose-50 {
+  background-color: #FDEEEE !important;
+  border-color: #F4AAB0 !important;
+  color: var(--industrial-error) !important;
+}
+
+/* Role / Neutral Badges */
+.bg-purple-50,
+.bg-indigo-50,
+.bg-blue-50,
+.bg-slate-100 {
+  background-color: #E9EDF0 !important;
+  border-color: #B8C2CC !important;
+  color: var(--industrial-text-primary) !important;
+}
+
+/* -------------------------------------------------------------
+   MODALS, DIALOGS, TOASTS & DROPDOWNS
+------------------------------------------------------------- */
+
+/* Backdrop overlay */
+.modal-backdrop-animate,
+[class*="bg-slate-900\/40"] {
+  background-color: rgba(18, 25, 32, 0.7) !important;
+}
+
+/* Modal window container */
+.modal-content-animate,
+[class*="max-w-"][class*="bg-white"] {
+  border-radius: 4px !important;
+  border: 1px solid var(--industrial-border) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Toast Notification Styling */
+.animate-slide-in {
+  border-radius: 4px !important;
+  border: 1px solid var(--industrial-border) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+  background-color: #FFFFFF !important;
+}
+
+/* CustomSelect Dropdown Menu Box */
+[role="listbox"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--industrial-border) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14) !important;
+}
+
+[role="option"] {
+  color: var(--industrial-text-primary) !important;
+  font-weight: 500 !important;
+}
+
+[role="option"]:hover,
+[role="option"][aria-selected="true"] {
+  background-color: var(--industrial-hover) !important;
+  color: var(--industrial-text-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* -------------------------------------------------------------
+   CUSTOM SCROLLBARS — SUBTLE INDUSTRIAL THIN SCROLLBAR
+------------------------------------------------------------- */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: #93A1B0 #E9EDF0;
 }
 
-/* WebKit Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #E9EDF0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #93A1B0;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #697581;
 }
 
 /* Toast Slide-In Animation */
 @keyframes slideIn {
   from {
-    transform: translateY(1rem) scale(0.95);
+    transform: translateY(0.5rem);
     opacity: 0;
   }
   to {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 .animate-slide-in {
-  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideIn 0.2s ease-out forwards;
 }
 
 /* Dropdown Menu Animations */
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.97);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .dropdown-animate-enter {
-  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: dropdownFadeIn 0.15s ease-out forwards;
 }
 
 /* Modal Window Animations */
@@ -124,20 +724,20 @@
 @keyframes modalContentScaleIn {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
 .modal-backdrop-animate {
-  animation: modalBackdropFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalBackdropFadeIn 0.15s ease-out forwards;
 }
 
 .modal-content-animate {
-  animation: modalContentScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalContentScaleIn 0.18s ease-out forwards;
 }
 
 /* Utility Classes for Overflow & Scrollbars */
@@ -172,3 +772,5 @@
     transition: none !important;
   }
 }
+
+

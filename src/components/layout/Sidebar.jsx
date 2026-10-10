@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Factory, Layers, Video, ShieldAlert, Shield, User, X, QrCode } from 'lucide-react';
+import { LayoutDashboard, Users, Factory, Layers, Video, ShieldAlert, Shield, User, X, QrCode, ShieldCheck, Target, Film, Eye } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { StatusBadge } from '../common/StatusBadge.jsx';
 import { normalizeRole, getRolePath } from '../../utils/roleUtils.js';
@@ -29,6 +29,41 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       roles: ['super_admin', 'admin', 'manager', 'operator'],
     },
     {
+      id: 'safety-rules',
+      label: 'Safety Rules',
+      path: `${basePath}/safety-rules`,
+      icon: <ShieldCheck className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
+      id: 'camera-regions',
+      label: 'Camera Regions',
+      path: `${basePath}/camera-regions`,
+      icon: <Target className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
+      id: 'video-processing',
+      label: 'Video Processing Jobs',
+      path: `${basePath}/video-processing`,
+      icon: <Film className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
+      id: 'detection-events',
+      label: 'AI Detection Events',
+      path: `${basePath}/detection-events`,
+      icon: <Eye className="w-4 h-4" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
+      id: 'incidents',
+      label: 'Safety Incidents',
+      path: `${basePath}/incidents`,
+      icon: <ShieldAlert className="w-4 h-4 text-red-600" />,
+      roles: ['super_admin', 'admin', 'manager', 'operator'],
+    },
+    {
       id: 'users',
       label: 'User Management',
       path: `${basePath}/users`,
@@ -54,13 +89,6 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       label: 'Camera Streams',
       path: `${basePath}/cameras`,
       icon: <Video className="w-4 h-4" />,
-      roles: ['super_admin', 'admin', 'manager', 'operator'],
-    },
-    {
-      id: 'activity',
-      label: 'Audit & Incident Logs',
-      path: `${basePath}/activity`,
-      icon: <ShieldAlert className="w-4 h-4" />,
       roles: ['super_admin', 'admin', 'manager', 'operator'],
     },
     {
